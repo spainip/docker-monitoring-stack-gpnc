@@ -1,0 +1,30 @@
+name: Deploy Monitoring Stack
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Update local repository
+        run: |
+          if [ -d "/opt/stacks/docker-monitoring-stack" ]; then
+            cd /opt/stacks/docker-monitoring-stack
+            git pull origin main
+          else
+            git clone ${{ github.server_url }}/${{ github.repository }} /opt/stacks/docker-monitoring-stack
+          fi
+
+      - name: Deploy with Docker Compose
+        run: |
+          cd /opt/stacks/docker-monitoring-stack
+          docker compose up -d --pull always --remove-orphans
