@@ -41,6 +41,7 @@ services:
       - traefik.http.routers.dockge.rule=Host(`grafana.spainip.es`)
       - traefik.http.routers.dockge.entrypoints=websecure
       - traefik.http.routers.dockge.tls.certresolver=acmeresolver
+      <<: *default-labels
     depends_on:
       - prometheus
     # ports:
@@ -50,8 +51,8 @@ services:
     networks:
       - monitoring
       - public
-    labels:
-      <<: *default-labels
+    # labels:
+    #   <<: *default-labels
     logging: *default-logging
 
   prometheus:
