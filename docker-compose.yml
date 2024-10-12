@@ -34,15 +34,22 @@ services:
       - ./dashboards/node-metrics.json:/var/lib/grafana/dashboards/node-metrics.json:ro
       - ./dashboards/container-metrics.json:/var/lib/grafana/dashboards/container-metrics.json:ro
       - ./dashboards/log-search.json:/var/lib/grafana/dashboards/log-search.json:ro
-      - grafana-data:/var/lib/grafana
+      - ./grafana-data:/var/lib/grafana
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.dockge.loadbalancer.server.port=3000
+      - traefik.http.routers.dockge.rule=Host(`grafana.spainip.es`)
+      - traefik.http.routers.dockge.entrypoints=websecure
+      - traefik.http.routers.dockge.tls.certresolver=acmeresolver
     depends_on:
       - prometheus
-    ports:
-      - 3000:3000
+    # ports:
+    #   - 3000:3000
     cpus: 0.5
     mem_limit: 512m
     networks:
       - monitoring
+      - public
     labels:
       <<: *default-labels
     logging: *default-logging
@@ -63,11 +70,11 @@ services:
       - ./configs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./configs/prometheus/recording-rules.yml:/etc/prometheus/recording-rules.yml
       - ./configs/prometheus/alerting-rules.yml:/etc/prometheus/alerting-rules.yml
-      - prometheus-data:/prometheus
+      - ./prometheus-data:/prometheus
     depends_on:
       - alertmanager
-    ports:
-      - 9090:9090
+    # ports:
+    #   - 9090:9090
     cpus: 0.5
     mem_limit: 512m
     networks:
@@ -128,8 +135,8 @@ services:
       - '--web.external-url=http://localhost:9093'
     volumes:
       - ./configs/alertmanager/alertmanager-fallback-config.yml:/etc/alertmanager/config.yml
-    ports:
-      - 9093:9093
+    # ports:
+    #   - 9093:9093
     cpus: 0.5
     mem_limit: 512m
     networks:
@@ -209,3 +216,6 @@ volumes:
 networks:
   monitoring:
     name: monitoring
+  public:
+    name: public
+    external: true
